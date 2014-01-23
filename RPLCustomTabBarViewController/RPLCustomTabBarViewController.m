@@ -43,7 +43,7 @@ typedef enum {
     self.tabBarContentView=UIView.new;
     self.tabBarContentView.clipsToBounds=YES;
     self.tabBarContentView.backgroundColor=[UIColor clearColor];
-    [self.view insertSubview:self.tabBarContentView aboveSubview:self.contentView];
+    [self.view addSubview:self.tabBarContentView];
 }
 
 
@@ -52,10 +52,6 @@ typedef enum {
 - (void)viewWillAppear:(BOOL)animated
 {
 	[super viewWillAppear:animated];
-    
-    //if ((self.childViewControllers == nil || !self.childViewControllers.count))
-    //    [self.selectedViewController viewWillAppear:animated];
-
     [self _layoutViews];
 }
 /*
@@ -125,7 +121,6 @@ typedef enum {
     {
         [_contentView removeFromSuperview];
         _contentView = contentView;
-        //_contentView.frame = CGRectMake(0, 0, self.view.bounds.size.width, self.tabBar.frame.origin.y);
         [self.view addSubview:_contentView];
         [self.view sendSubviewToBack:_contentView];
         [_contentView setNeedsDisplay];
@@ -138,19 +133,9 @@ typedef enum {
 {
     _viewControllers = viewControllers;
     
-//    // Add the view controllers as child view controllers, so they can find this controller
-//    if([self respondsToSelector:@selector(addChildViewController:)]) {
-//        for(UIViewController* vc in _viewControllers) {
-//            [self addChildViewController:vc];
-//        }
-//    }
-    
     // When setting the view controllers, the first vc is the selected one;
     if (viewControllers.count)
-        [self setSelectedViewController:viewControllers[0]];
-    
-    // Load the tabs on the go
-//    [self loadTabs];
+        [self setSelectedViewController:[viewControllers objectAtIndex:0]];
 }
 
 
@@ -160,7 +145,7 @@ typedef enum {
     //UIViewController *previousSelectedViewController = _selectedViewController;
     NSInteger selectedIndex = [self.viewControllers indexOfObject:selectedViewController];
     
-    if (_selectedViewController != selectedViewController /*&& selectedIndex != NSNotFound*/)
+    if (_selectedViewController != selectedViewController && selectedIndex != NSNotFound)
     {
         [self _removeViewControllerFromHierarchy];
         
@@ -173,24 +158,6 @@ typedef enum {
         if ([selectedViewController isKindOfClass:UINavigationController.class])
             ((UINavigationController*)selectedViewController).delegate = self;
 
-        
-        /*
-        if ((self.childViewControllers == nil || !self.childViewControllers.count) && visible)
-        {
-			[previousSelectedViewController viewWillDisappear:NO];
-			[selectedViewController viewWillAppear:NO];
-		}
-        
-        [tabBarView setContentView:selectedViewController.view];
-        
-        if ((self.childViewControllers == nil || !self.childViewControllers.count) && visible)
-        {
-			[previousSelectedViewController viewDidDisappear:NO];
-			[selectedViewController viewDidAppear:NO];
-		}
-        
-        [tabBar setSelectedTab:(tabBar.tabs)[selectedIndex]];
-        */
     }
 }
 
@@ -222,13 +189,12 @@ typedef enum {
 -(void)_addViewControllerToHierarchy:(UIViewController*)viewController
 {
     [self addChildViewController:viewController];
-    viewController.view.frame = self.contentView.bounds;
-    viewController.view.autoresizesSubviews=YES;
-    viewController.view.autoresizingMask=UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    //[self.contentView addSubview:viewController.view];
-    
     self.contentView=viewController.view;
+    self.contentView.autoresizesSubviews=YES;
+    self.contentView.autoresizingMask=UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    
     [viewController didMoveToParentViewController:self];
+    [self _layoutViews];
 }
 
 
